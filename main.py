@@ -1,6 +1,6 @@
 # Required libraries
 import requests, re, synscan
-
+import database
 
 # Converts the API request's body to a list of coordinates
 def get_coords_list(data):
@@ -60,10 +60,15 @@ def slew_telescope(coords):
 def main():
 
     port = 8090
-    obj = input()
+    # obj = input("Enter Object Name : ")
+    # coords = fetch_object(obj.lower(),port)
+    # print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
 
-    coords = fetch_object(obj.lower(), port)
-    print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
+    reqs = database.get_requests()
+
+    for req in reqs:
+        coords = fetch_object(req[2].lower(), port)
+        print(f"Fetched data on {req[2].upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
 
     #slew_telescope(coords)
 
