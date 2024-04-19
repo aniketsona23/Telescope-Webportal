@@ -55,20 +55,34 @@ def slew_telescope(coords):
 
     curr_pos= [smc.axis_get_pos(1), smc.axis_get_pos(2)]
     print(f"Current position of telescope: [Az: {curr_pos[0]}, Alt: {curr_pos[1]}]")
+    
+# Takes Object name In CLI 
+def manual_control(port):
+    obj = input("Enter Object Name : ").strip()
+    coords = fetch_object(obj.lower(),port)
+    print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
+    return coords
+
+def web_control(port):
+    update = database.insert_new_requests()
+    if (update):
+        objects = database.get_remaining_objects()
+        for req in objects:
+            coords = fetch_object(req[2].lower(), port)
+            print(f"Fetched data on {req[2].upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
 
 
 def main():
 
     port = 8090
-    # obj = input("Enter Object Name : ")
-    # coords = fetch_object(obj.lower(),port)
-    # print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
-
-    reqs = database.get_requests()
-
-    for req in reqs:
-        coords = fetch_object(req[2].lower(), port)
-        print(f"Fetched data on {req[2].upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
+    control = input("Enter Control method - Manual(m) or Web(w) : ").strip().lower()
+    if control=="m":
+        coords = manual_control(port)
+    elif control=="w":
+        coords = web_control(port)
+    else:
+        print("Enter Valid input !")
+        main()
 
     #slew_telescope(coords)
 
