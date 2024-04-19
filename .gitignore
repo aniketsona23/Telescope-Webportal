@@ -1,2 +1,3 @@
-./telescope-webportal-key.json
-./envs.json
+telescope-webportal-key.json
+envs.json
+.env

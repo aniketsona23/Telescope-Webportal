@@ -1,9 +1,10 @@
 import pygsheets
 import mysql.connector
-import json
+import dotenv
+import os
 
-envs = json.load(open("./envs.json"))
-conn  = mysql.connector.connect(host="localhost",user=envs["mysql_user"],password=envs["mysql_pass"],database="Telescope_Webportal")
+dotenv.load_dotenv()
+conn  = mysql.connector.connect(host="localhost",user=os.environ["mysql_user"],password=os.environ["mysql_pass"],database="Telescope_Webportal")
 
 if conn.is_connected():
     print("MySql connected !")
@@ -18,8 +19,8 @@ worksht = spread.worksheet("title", "Sheet1")
 requests= (worksht.range("A2:E4"))
 
 
-
-def get_requests():
+# Get all objects requests from google sheet(each item in this list is a list which represents row of the sheet)
+def get_cloud_requests():
     proper = []
     for row in requests:
         r =[data.value for data in row ]+["0"]
@@ -27,10 +28,16 @@ def get_requests():
 
     return proper
 
-def insert_new_requests():
+# Fetches all local requests from local server
+def get_local_requests():
     cur.execute("SELECT * FROM User_Requests ;")
     local_requests = cur.fetchall()
-    cloud_requests  = get_requests()
+    return local_requests
+
+# Adds new requests to local server
+def insert_new_requests():
+    local_requests = get_local_requests()
+    cloud_requests  = get_cloud_requests()
 
     if len(local_requests)!=len(cloud_requests):
         new_requests = len(cloud_requests) - len(local_requests)
@@ -40,6 +47,7 @@ def insert_new_requests():
         return True
     return False
 
+# Fetches objects not clicked from local database
 def get_remaining_objects():
     cur.execute("SELECT * FROM User_Requests WHERE status='0';")
     remaining_objects = cur.fetchall()

@@ -1,6 +1,11 @@
 # Required libraries
+import dotenv
 import requests, re, synscan
 import database
+import os
+
+dotenv.load_dotenv()
+port = os.environ["PORT"]
 
 # Converts the API request's body to a list of coordinates
 def get_coords_list(data):
@@ -56,14 +61,14 @@ def slew_telescope(coords):
     curr_pos= [smc.axis_get_pos(1), smc.axis_get_pos(2)]
     print(f"Current position of telescope: [Az: {curr_pos[0]}, Alt: {curr_pos[1]}]")
     
-# Takes Object name In CLI 
-def manual_control(port):
+# Takes Object name through CLI
+def manual_control():
     obj = input("Enter Object Name : ").strip()
     coords = fetch_object(obj.lower(),port)
     print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
     return coords
 
-def web_control(port):
+def web_control():
     update = database.insert_new_requests()
     if (update):
         objects = database.get_remaining_objects()
@@ -74,12 +79,11 @@ def web_control(port):
 
 def main():
 
-    port = 8090
     control = input("Enter Control method - Manual(m) or Web(w) : ").strip().lower()
     if control=="m":
-        coords = manual_control(port)
+        coords = manual_control()
     elif control=="w":
-        coords = web_control(port)
+        coords = web_control()
     else:
         print("Enter Valid input !")
         main()
