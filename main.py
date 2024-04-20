@@ -60,17 +60,26 @@ def slew_telescope(coords):
 
     curr_pos= [smc.axis_get_pos(1), smc.axis_get_pos(2)]
     print(f"Current position of telescope: [Az: {curr_pos[0]}, Alt: {curr_pos[1]}]")
+
+# Track Object 'obj' for 't' time 
+def track(t,obj):
+    pass
     
 # Takes Object name through CLI
 def manual_control():
+
     obj = input("Enter Object Name : ").strip()
     coords = fetch_object(obj.lower(),port)
     print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
+    
     return coords
 
 def web_control():
+    
     update = database.insert_new_requests()
-    if (update):
+    
+    if (update):# If there were new requests
+        
         objects = database.get_remaining_objects()
         for req in objects:
             coords = fetch_object(req[2].lower(), port)

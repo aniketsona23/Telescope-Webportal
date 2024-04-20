@@ -3,39 +3,77 @@ import mysql.connector
 import dotenv
 import os
 
+# Load environment variables
 dotenv.load_dotenv()
-conn  = mysql.connector.connect(host="localhost",user=os.environ["mysql_user"],password=os.environ["mysql_pass"],database="Telescope_Webportal")
 
+#Initialize MySQL connection
+conn  = mysql.connector.connect(host="localhost",user=os.environ["MYSQL_USER"],password=os.environ["MYSQL_PASS"],database=os.environ["DB_NAME"])
 if conn.is_connected():
     print("MySql connected !")
 else:
     print("MySQL not Connected !")
-
 cur = conn.cursor()
-client = pygsheets.authorize(service_account_file="./telescope-webportal-key.json")
 
+# Initialize google sheet Connection
+client = pygsheets.authorize(service_account_file="./telescope-webportal-key.json")
 spread = client.open("Telescope requests")
 worksht = spread.worksheet("title", "Sheet1") 
 requests= (worksht.range("A2:E4"))
 
 
-# Get all objects requests from google sheet(each item in this list is a list which represents row of the sheet)
 def get_cloud_requests():
+    '''
+    Description
+    -----------
+    Get All objects requests from google Sheet
+
+    Returns
+    -------
+    List
+        List of all requests , each request as a list
+    '''
     proper = []
     for row in requests:
-        r =[data.value for data in row ]+["0"]
+        r =[data.value for data in row ]+[0]
         proper.append(r)
 
     return proper
 
-# Fetches all local requests from local server
+ 
 def get_local_requests():
+    '''
+    Description
+    ----------
+    Fetches all local requests from local server
+
+    Returns
+    -------
+    List
+        List of all rows, where each row is a list having each column value  
+    '''
     cur.execute("SELECT * FROM User_Requests ;")
     local_requests = cur.fetchall()
     return local_requests
 
-# Adds new requests to local server
+
 def insert_new_requests():
+
+    ''' 
+    Description
+    -----------
+    Adds New Requests to Local SQL server
+
+    This function checks if number of requests in local server is equal to on google sheeet.
+    If not, then adds the new Requests from sheet to local server.
+    
+    Returns
+    -------
+    True 
+        If there were new requests and added to server
+    
+    False
+        If there were no new requests'''
+    
     local_requests = get_local_requests()
     cloud_requests  = get_cloud_requests()
 
@@ -47,9 +85,18 @@ def insert_new_requests():
         return True
     return False
 
-# Fetches objects not clicked from local database
 def get_remaining_objects():
-    cur.execute("SELECT * FROM User_Requests WHERE status='0';")
+    '''
+    Description
+    -----------
+    Fetches Objects not clicked from Local Database (status=0)
+    
+    Returns
+    -------
+    List
+        List of remaining Requests, each request as a list'''
+    
+    cur.execute("SELECT * FROM User_Requests WHERE status=0;")
     remaining_objects = cur.fetchall()
     return remaining_objects
 
