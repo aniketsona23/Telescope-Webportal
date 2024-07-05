@@ -3,6 +3,7 @@ import dotenv
 import requests, re, synscan
 import database
 import os
+import time
 
 dotenv.load_dotenv()
 port = os.environ["PORT"]
@@ -62,17 +63,21 @@ def slew_telescope(coords):
     print(f"Current position of telescope: [Az: {curr_pos[0]}, Alt: {curr_pos[1]}]")
 
 # Track Object 'obj' for 't' time 
-def track(t,obj):
-    pass
+def track(obj, t):
+
+    coords = fetch_object('+'.join(obj.lower().split(' ')), port)
+    slew_telescope(coords)
+    endtime = time.time() + t
+    while time.time() < endtime:
+        coords = fetch_object('+'.join(obj.lower().split(' ')), port)
+        slew_telescope(coords)
+        time.sleep(0.01)
     
 # Takes Object name through CLI
 def manual_control():
 
     obj = input("Enter Object Name : ").strip()
-    coords = fetch_object(obj.lower(),port)
-    print(f"Fetched data on {obj.upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
-    
-    return coords
+    track(obj, 30)
 
 def web_control():
     
@@ -90,14 +95,12 @@ def main():
 
     control = input("Enter Control method - Manual(m) or Web(w) : ").strip().lower()
     if control=="m":
-        coords = manual_control()
+        manual_control()
     elif control=="w":
-        coords = web_control()
+        web_control()
     else:
         print("Enter Valid input !")
         main()
-
-    #slew_telescope(coords)
 
 
 main()
