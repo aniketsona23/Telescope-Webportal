@@ -14,11 +14,11 @@ else:
     print("MySQL not Connected !")
 cur = conn.cursor()
 
-# Initialize google sheet Connection
-client = pygsheets.authorize(service_account_file="./telescope-webportal-key.json")
-spread = client.open("Telescope requests")
-worksht = spread.worksheet("title", "Sheet1") 
-requests= (worksht.range("A2:E4"))
+# # Initialize google sheet Connection
+# client = pygsheets.authorize(service_account_file="./telescope-webportal-key.json")
+# spread = client.open("Telescope requests")
+# worksht = spread.worksheet("title", "Sheet1") 
+# requests= (worksht.range("A2:E4"))
 
 
 def get_cloud_requests():

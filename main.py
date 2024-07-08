@@ -1,54 +1,57 @@
 # Required libraries
+import sqlite3
 import dotenv
-import requests, re, synscan
-import database
+import requests, synscan
+# import database (uncomment if switch to mysql)
 import os
 import time
 
 dotenv.load_dotenv()
 port = os.environ["PORT"]
+connect = sqlite3.connect("database.db")
 
-# Converts the API request's body to a list of coordinates
-def get_coords_list(data):
+# We don't need the this commented part
+# # Converts the API request's body to a list of coordinates
+# def get_coords_list(data):
 
-    beg = data.find("<br/>Az./Alt.: ")
-    end = data.find("<br/>", beg + 1)
+#     beg = data.find("<br/>Az./Alt.: ")
+#     end = data.find("<br/>", beg + 1)
 
-    lst = data[beg+len("<br/>Az./Alt.: ") : end-len("  <")+1].split('/')
+#     lst = data[beg+len("<br/>Az./Alt.: ") : end-len("  <")+1].split('/')
 
-    az = re.split('[Â° \' \" + -]', lst[0])
-    alt = re.split('[Â° \' \" + -]', lst[1])
+#     az = re.split('[Â° \' \" + -]', lst[0])
+#     alt = re.split('[Â° \' \" + -]', lst[1])
 
-    az.insert(0, lst[0][0])
-    alt.insert(0, lst[1][0])
-    for i in [1,2,4]:
-        az.pop(i)
-        alt.pop(i)
+#     az.insert(0, lst[0][0])
+#     alt.insert(0, lst[1][0])
+#     for i in [1,2,4]:
+#         az.pop(i)
+#         alt.pop(i)
 
-    return (az, alt)
-
-
-# Converts the output of get_coords_list into float values
-def coord_to_flt(lst):
-
-    return round(int(lst[0] + '1') * (float(lst[1]) + float(lst[2])/60), 3)
+#     return (az, alt)
 
 
-# Returns the az-alt coordinates in float format
-def get_coords_flt(data):
+# # Converts the output of get_coords_list into float values
+# def coord_to_flt(lst):
 
-    az, alt = get_coords_list(data)
-    az_flt, alt_flt = coord_to_flt(az), coord_to_flt(alt)
+#     return round(int(lst[0] + '1') * (float(lst[1]) + float(lst[2])/60), 3)
 
-    return {'az': az_flt, 'alt': alt_flt}
+
+# # Returns the az-alt coordinates in float format
+# def get_coords_flt(data):
+
+#     az, alt = get_coords_list(data)
+#     az_flt, alt_flt = coord_to_flt(az), coord_to_flt(alt)
+
+#     return {'az': az_flt, 'alt': alt_flt}
 
 
 # Fetches the final coordinates of an object given the port number
 def fetch_object(obj, port):
 
-    txt = requests.get(f"http://localhost:{port}/api/objects/info?name={obj}").text
+    jso = requests.get(f"http://localhost:{port}/api/objects/info?name={obj}&format=json").json()
 
-    return get_coords_flt(txt)
+    return {"az":jso["azimuth"],"alt":jso["altitude"]}
 
 
 # Slews the telescope to the coordinates provided
@@ -66,30 +69,31 @@ def slew_telescope(coords):
 def track(obj, t):
 
     coords = fetch_object('+'.join(obj.lower().split(' ')), port)
+    print(f"[+] Tracking {obj} || Exposure {t}s ...")
     slew_telescope(coords)
     endtime = time.time() + t
     while time.time() < endtime:
         coords = fetch_object('+'.join(obj.lower().split(' ')), port)
         slew_telescope(coords)
         time.sleep(0.01)
-    
+    print("[+] Tracking done !")
+
 # Takes Object name through CLI
 def manual_control():
 
     obj = input("Enter Object Name : ").strip()
     track(obj, 30)
 
-def web_control():
-    
-    update = database.insert_new_requests()
-    
-    if (update):# If there were new requests
-        
-        objects = database.get_remaining_objects()
-        for req in objects:
-            coords = fetch_object(req[2].lower(), port)
-            print(f"Fetched data on {req[2].upper()}: [Az: {coords['az']}, Alt: {coords['alt']}]")
 
+# Function to Capture image
+def capture_image():
+    pass
+
+def web_control():
+    data=connect.execute("SELECT * from data").fetchall()
+    for req_ind in range(len(data)):
+        track(data[req_ind][3],data[req_ind][2])
+   
 
 def main():
 
