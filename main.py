@@ -5,46 +5,11 @@ import requests, synscan
 # import database (uncomment if switch to mysql)
 import os
 import time
+from datetime import datetime
 
 dotenv.load_dotenv()
 port = os.environ["PORT"]
 connect = sqlite3.connect("database.db")
-
-# We don't need the this commented part
-# # Converts the API request's body to a list of coordinates
-# def get_coords_list(data):
-
-#     beg = data.find("<br/>Az./Alt.: ")
-#     end = data.find("<br/>", beg + 1)
-
-#     lst = data[beg+len("<br/>Az./Alt.: ") : end-len("  <")+1].split('/')
-
-#     az = re.split('[Â° \' \" + -]', lst[0])
-#     alt = re.split('[Â° \' \" + -]', lst[1])
-
-#     az.insert(0, lst[0][0])
-#     alt.insert(0, lst[1][0])
-#     for i in [1,2,4]:
-#         az.pop(i)
-#         alt.pop(i)
-
-#     return (az, alt)
-
-
-# # Converts the output of get_coords_list into float values
-# def coord_to_flt(lst):
-
-#     return round(int(lst[0] + '1') * (float(lst[1]) + float(lst[2])/60), 3)
-
-
-# # Returns the az-alt coordinates in float format
-# def get_coords_flt(data):
-
-#     az, alt = get_coords_list(data)
-#     az_flt, alt_flt = coord_to_flt(az), coord_to_flt(alt)
-
-#     return {'az': az_flt, 'alt': alt_flt}
-
 
 # Fetches the final coordinates of an object given the port number
 def fetch_object(obj, port):
@@ -84,10 +49,19 @@ def manual_control():
     obj = input("Enter Object Name : ").strip()
     track(obj, 30)
 
-
 # Function to Capture image
 def capture_image():
     pass
+
+def sorter(elem):
+    dte = elem[5].split("-")
+    tm = elem[6].split(":")
+
+    return datetime(dte[0],dte[1],dte[2],tm[0],tm[1],tm[2])
+
+def sorted_data():
+    data= connect.execute("SELECT * FROM DATA").fetchall()
+    return sorted(data,key=sorter)
 
 def web_control():
     data=connect.execute("SELECT * from data").fetchall()

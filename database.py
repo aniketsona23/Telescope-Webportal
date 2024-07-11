@@ -1,4 +1,3 @@
-import pygsheets
 import mysql.connector
 import dotenv
 import os
@@ -21,23 +20,6 @@ cur = conn.cursor()
 # requests= (worksht.range("A2:E4"))
 
 
-def get_cloud_requests():
-    '''
-    Description
-    -----------
-    Get All objects requests from google Sheet
-
-    Returns
-    -------
-    List
-        List of all requests , each request as a list
-    '''
-    proper = []
-    for row in requests:
-        r =[data.value for data in row ]+[0]
-        proper.append(r)
-
-    return proper
 
  
 def get_local_requests():
