@@ -1,2 +1,4 @@
 .env
 db.py
+.vscode
+_pychache_
