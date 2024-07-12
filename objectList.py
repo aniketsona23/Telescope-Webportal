@@ -1,4 +1,5 @@
 import requests
+import re
 
 base_url = 'http://localhost:8090/api/objects/'
 
@@ -21,4 +22,47 @@ for type in categories:
         except requests.exceptions.JSONDecodeError:# when obj not found
             continue
 
-print(objects)
+
+# Returns the time in hours rounded to two decimal places
+def format_time(time_str):
+    match = re.match(r'(\d+)h(\d+)m', time_str)
+    if match:
+        hours, minutes = map(int, match.groups())
+        time = round(hours + minutes / 60, 2)
+        return time + 24 if time < 12 else time # Normalize the time
+    else:
+        return None
+
+# Returns the magnitude limit for the object
+def mag_limit(type):
+    type = type.lower()
+    if 'cluster' in type:
+        return 7
+    elif ('nebula' in type) or ('cloud' in type) or ('remnant' in type):
+        return 7
+    elif 'galaxy' in type:
+        return 7
+    elif 'star' in type:
+        return 6
+    elif 'planet' in type:
+        return 6
+    else:
+        return 7
+
+# Telescope operation times:
+start_time = 20.0
+end_time = 6.0 + 24 # next day
+filtered_objects_dict = {}
+
+for obj in objects_dict:
+    data = objects_dict[obj]
+    rise_time = format_time(data['rise'])
+    set_time = format_time(data['set'])
+    try:
+        if rise_time < end_time and set_time > start_time:
+            if data['mag'] <= mag_limit(data['type']):
+                filtered_objects_dict[obj] = data
+    except:
+        continue
+
+print(filtered_objects_dict.keys())
