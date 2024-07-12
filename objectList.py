@@ -13,16 +13,6 @@ def getObjDetails(objName):
 #contains keys as objname and values as its details dictionary
 objects_dict = {}
 
-
-for type in categories:
-    objects =eval( requests.get(f"{base_url}listobjectsbytype?type={type}").text)#get list of objects of "type"
-    for obj in objects:
-        try:
-            objects_dict[obj] = getObjDetails(obj)
-        except requests.exceptions.JSONDecodeError:# when obj not found
-            continue
-
-
 # Returns the time in hours rounded to two decimal places
 def format_time(time_str):
     match = re.match(r'(\d+)h(\d+)m', time_str)
@@ -49,20 +39,37 @@ def mag_limit(type):
     else:
         return 7
 
+
+
 # Telescope operation times:
 start_time = 20.0
 end_time = 6.0 + 24 # next day
 filtered_objects_dict = {}
 
-for obj in objects_dict:
-    data = objects_dict[obj]
-    rise_time = format_time(data['rise'])
-    set_time = format_time(data['set'])
-    try:
-        if rise_time < end_time and set_time > start_time:
-            if data['mag'] <= mag_limit(data['type']):
-                filtered_objects_dict[obj] = data
-    except:
-        continue
+for type in categories:
+    objects =eval( requests.get(f"{base_url}listobjectsbytype?type={type}").text)#get list of objects of "type"
+    for obj in objects:
+        try:
+            obj_data = getObjDetails(obj)
+            rise_time = format_time(obj_data['rise'])
+            set_time = format_time(obj_data['set'])
+            if rise_time < end_time and set_time > start_time:
+                if obj_data['mag'] <= mag_limit(obj_data['type']):
+                    objects_dict[obj] = obj_data
 
-print(filtered_objects_dict.keys())
+        except :# when obj not found
+            pass
+
+
+# for obj in objects_dict:
+#     data = objects_dict[obj]
+#     rise_time = format_time(data['rise'])
+#     set_time = format_time(data['set'])
+#     try:
+#         if rise_time < end_time and set_time > start_time:
+#             if data['mag'] <= mag_limit(data['type']):
+#                 filtered_objects_dict[obj] = data
+#     except:
+#         continue
+
+print(len(objects_dict.keys()))

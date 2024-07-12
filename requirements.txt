@@ -1,5 +1,0 @@
-mysql_connector_repackaged==0.3.1
-pygsheets==2.0.6
-python-dotenv==1.0.1
-Requests==2.31.0
-synscan==0.1.5
