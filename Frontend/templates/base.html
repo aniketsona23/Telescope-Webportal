@@ -14,8 +14,6 @@
             background: rgb(45,46,64);
             background: linear-gradient(0deg, rgba(45,46,64,0.8) 0%, rgba(68,69,85,0.7346332282913166) 51%, rgba(68,69,85,0.7346332282913166) 82%, rgba(68,69,85,0.7346332282913166) 100%);
             font-family: 'Satoshi', sans-serif;
-            color: #FAF9F6; 
-            /* #F9F6EE */
         }
     </style>
 </head>
@@ -44,14 +42,14 @@
     {% block content %}{% endblock %}
 
     <!-- Footer -->
-    <footer class="footer bg-white py-3 px-5 mt-5">
+    <footer class="footer bg-dark py-3 px-5 mt-5">
         <div>
             <div class="row align-items-center">
-                <div class="col-9 text-start">
+                <div class="col-9 text-start text-white">
                     <span class="fs-6 fs-md-5 fs-lg-4">© 2024 SEDS Celestia. All rights reserved.</span>
                 </div>
                 <div class="col-3 text-end">
-                    <img src="{{ url_for('static', filename='images/bits-logo.png') }}" alt="SEDS Celestia" class="img-fluid">
+                    <img src="{{ url_for('static', filename='images/bits-logo-dark.png') }}" alt="SEDS Celestia" class="img-fluid h-auto" width="80">
                 </div>
             </div>
         </div>

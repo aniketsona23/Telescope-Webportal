@@ -8,7 +8,7 @@ import sqlite3
 conn = sqlite3.connect('databasemailer.db')
 cursor = conn.cursor()
 
-load_dotenv()
+load_dotenv("../env")
 sender_email = os.getenv('EMAIL')
 password = os.getenv('PASSWORD')
 
